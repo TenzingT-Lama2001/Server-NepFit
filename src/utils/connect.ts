@@ -3,7 +3,7 @@ import config from "../config/default";
 import logger from "./logger";
 
 async function connect() {
-  const dbUri = config.dbUri;
+  const dbUri = config.DATABASE_URL;
 
   try {
     await mongoose.set("strictQuery", false);

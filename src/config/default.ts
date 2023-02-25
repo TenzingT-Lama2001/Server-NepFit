@@ -1,4 +1,15 @@
 export default {
-  port: 3000,
-  dbUri: "mongodb://localhost:27017",
+  SERVER_PORT: process.env.PORT || 3001,
+  DATABASE_URL: process.env.DATABASE_URL || "mongodb://localhost:27017",
+  JWT_ACCESS_TOKEN_SECRET: process.env.JWT_ACCESS_TOKEN_SECRET || "1234",
+  JWT_REFRESH_TOKEN_SECRET: process.env.JWT_REFRESH_TOKEN_SECRET || "3456",
+  JWT_ACCESS_TOKEN_EXPIRY: process.env.JWT_ACCESS_TOKEN_EXPIRY || "15s",
+  JWT_REFRESH_TOKEN_EXPIRY: process.env.JWT_REFRESH_TOKEN_EXPIRY || "15s",
+  COOKIE_TIME: process.env.COOKIE_TIME || 3,
+  SMTP_HOST: process.env.SMTP_HOST || "",
+  SMTP_PORT: process.env.SMTP_PORT || "",
+  SMTP_USER: process.env.SMTP_USER || "",
+  SMTP_PASS: process.env.SMTP_PASS || "",
+  USER_EMAIL: process.env.USER_EMAIL || "",
+  USER_PASSWORD: process.env.USER_PASSWORD || "",
 };
