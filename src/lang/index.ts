@@ -13,6 +13,7 @@ export const lang = {
     INTERNAL_SERVER_ERROR: "Something Went Wrong",
     YOUR_RECOMMEND_SENT: "Your Recommendation has been sent",
     CONTACT_SAVE: "We will contact you soon",
+    LOGOUT_SUCCESSFUL: "Logout Successful",
   },
 };
 
@@ -32,5 +33,6 @@ export const errorMsgs = {
     NO_REFRESH_TOKEN: "No refresh token found",
     FAILED_T0_SEND_EMAIL: "Failed to send email",
     PASSWORD_MISMATCH: "Password and confirm password do not match",
+    FORBIDDEN_ERROR: "Forbidden Error",
   },
 };

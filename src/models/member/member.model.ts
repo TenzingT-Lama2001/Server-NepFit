@@ -58,7 +58,7 @@ const MemberSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: "Member",
+    default: "member",
   },
   refreshToken: String,
   forgotPasswordToken: String,

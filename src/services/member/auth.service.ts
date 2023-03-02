@@ -53,9 +53,9 @@ export async function login({ email, password }: LoginMember) {
     throw new BadRequestError("INVALID_CREDENTIALS");
   }
 
-  const [accessToken, refreshToken] = await generateToken(member);
+  const [accessToken, refreshToken, user] = await generateToken(member);
 
-  return [accessToken, refreshToken];
+  return [accessToken, refreshToken, user];
 }
 
 export async function forgotPassword(email: string) {

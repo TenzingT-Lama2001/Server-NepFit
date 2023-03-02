@@ -14,17 +14,10 @@ export async function generateToken(user: User) {
   const accessToken = user.getJwtAccessToken();
   const refreshToken = user.getJwtRefreshToken();
 
-  // const cookieOptions = {
-  //   httpOnly: true,
-  //   sameSite: "None",
-  //   secure: true,
-  //   maxAge: 24 * 60 * 60 * 1000,
-  // };
-
   user.refreshToken = refreshToken;
   await user.save();
 
   user.password = undefined;
-
-  return [accessToken, refreshToken];
+  user.refreshToken = undefined;
+  return [accessToken, refreshToken, user];
 }
