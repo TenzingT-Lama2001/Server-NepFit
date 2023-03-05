@@ -8,7 +8,7 @@ import { memberAuthService } from "../../services/member";
 import jwt from "jsonwebtoken";
 import config from "../../config/default";
 import { MemberDocument } from "../../models/member/member.model";
-import { nextTick } from "process";
+
 export async function register(
   req: Request,
   res: Response,

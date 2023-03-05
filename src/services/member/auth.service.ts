@@ -11,21 +11,22 @@ import { generateToken } from "../../utils/generateToken";
 import { authConfig } from "../../config/auth";
 import { mailHelper } from "../../utils/mailHelper";
 import crypto from "crypto";
-type RegisterMember = {
+export type RegisterUser = {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
+  role?: "member" | "admin" | "trainer" | "staff";
 };
 
-export type LoginMember = Pick<RegisterMember, "email" | "password">;
+export type LoginMember = Pick<RegisterUser, "email" | "password">;
 
 export async function register({
   firstName,
   lastName,
   email,
   password,
-}: RegisterMember) {
+}: RegisterUser) {
   const member = await Member.findOne({ email });
 
   if (member) throw new BadRequestError("USER_ALREADY_EXIST");

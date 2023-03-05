@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import config from "../../config/default";
 
-export interface ITrainer {
+export interface IStaff {
   firstName: string;
   lastName: string;
   email: string;
@@ -16,7 +16,7 @@ export interface ITrainer {
   forgotPasswordExpiry: Date;
 }
 
-export interface TrainerDocument extends ITrainer, mongoose.Document {
+export interface StaffDocument extends IStaff, mongoose.Document {
   firstName: string;
   lastName: string;
   email: string;
@@ -33,7 +33,7 @@ export interface TrainerDocument extends ITrainer, mongoose.Document {
   getForgotPasswordToken: () => string;
 }
 
-const TrainerSchema = new mongoose.Schema({
+const StaffSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: [true, "Please provide your first name"],
@@ -58,7 +58,7 @@ const TrainerSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: "trainer",
+    default: "staff",
   },
   refreshToken: String,
   forgotPasswordToken: String,
@@ -66,7 +66,7 @@ const TrainerSchema = new mongoose.Schema({
 });
 
 //encrypt password before save - HOOKS
-TrainerSchema.pre("save", async function (this: TrainerDocument, next) {
+StaffSchema.pre("save", async function (this: StaffDocument, next) {
   // only hash the password if it has been modified (or is new)
   if (!this.isModified("password")) {
     return next();
@@ -83,20 +83,20 @@ TrainerSchema.pre("save", async function (this: TrainerDocument, next) {
 });
 
 //validate the password with passed on user password - METHODS
-TrainerSchema.methods.comparePassword = async function (
+StaffSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   // So we don't have to pass this into the interface method
-  const trainer = this as TrainerDocument;
+  const staff = this as StaffDocument;
 
   return await bcrypt
-    .compare(candidatePassword, trainer.password)
+    .compare(candidatePassword, staff.password)
     .catch((e) => false);
 };
 
 //create and return jwt token
 
-TrainerSchema.methods.getJwtAccessToken = function () {
+StaffSchema.methods.getJwtAccessToken = function () {
   return jwt.sign({ id: this._id }, config.JWT_ACCESS_TOKEN_SECRET, {
     expiresIn: config.JWT_ACCESS_TOKEN_EXPIRY,
   });
@@ -104,13 +104,13 @@ TrainerSchema.methods.getJwtAccessToken = function () {
 
 //create and return jwt refresh token
 
-TrainerSchema.methods.getJwtRefreshToken = function () {
+StaffSchema.methods.getJwtRefreshToken = function () {
   return jwt.sign({ id: this._id }, config.JWT_REFRESH_TOKEN_SECRET, {
     expiresIn: config.JWT_REFRESH_TOKEN_EXPIRY,
   });
 };
 
-TrainerSchema.methods.getForgotPasswordToken = function () {
+StaffSchema.methods.getForgotPasswordToken = function () {
   //generate a long and random string
   const forgotToken = crypto.randomBytes(20).toString("hex");
 
@@ -126,6 +126,6 @@ TrainerSchema.methods.getForgotPasswordToken = function () {
 
   return forgotToken;
 };
-const Trainer = mongoose.model<TrainerDocument>("Trainer", TrainerSchema);
+const Staff = mongoose.model<StaffDocument>("Staff", StaffSchema);
 
-export default Trainer;
+export default Staff;

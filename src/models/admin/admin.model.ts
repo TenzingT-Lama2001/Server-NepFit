@@ -1,12 +1,19 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import validator from "validator";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import config from "../../config/default";
 
 export interface IAdmin {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
+  role: string;
+  refreshToken: string;
+  forgotPasswordToken: string;
+  forgotPasswordExpiry: Date;
 }
 
 export interface AdminDocument extends IAdmin, mongoose.Document {
@@ -14,12 +21,19 @@ export interface AdminDocument extends IAdmin, mongoose.Document {
   lastName: string;
   email: string;
   password: string;
+  role: string;
   createdAt: Date;
   updatedAt: Date;
+  refreshToken: string;
+  forgotPasswordToken: string;
+  forgotPasswordExpiry: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
+  getJwtAccessToken: () => string;
+  getJwtRefreshToken: () => string;
+  getForgotPasswordToken: () => string;
 }
 
-const adminSchema = new mongoose.Schema({
+const AdminSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: [true, "Please provide your first name"],
@@ -42,10 +56,17 @@ const adminSchema = new mongoose.Schema({
     validate: [validator.isEmail, "Please enter email in correct format"],
     unique: true,
   },
+  role: {
+    type: String,
+    default: "admin",
+  },
+  refreshToken: String,
+  forgotPasswordToken: String,
+  forgotPasswordExpiry: Date,
 });
 
 //encrypt password before save - HOOKS
-adminSchema.pre("save", async function (this: AdminDocument, next) {
+AdminSchema.pre("save", async function (this: AdminDocument, next) {
   // only hash the password if it has been modified (or is new)
   if (!this.isModified("password")) {
     return next();
@@ -62,7 +83,7 @@ adminSchema.pre("save", async function (this: AdminDocument, next) {
 });
 
 //validate the password with passed on user password - METHODS
-adminSchema.methods.comparePassword = async function (
+AdminSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   // So we don't have to pass this into the interface method
@@ -73,4 +94,38 @@ adminSchema.methods.comparePassword = async function (
     .catch((e) => false);
 };
 
-export default mongoose.model<AdminDocument>("Admin", adminSchema);
+//create and return jwt token
+
+AdminSchema.methods.getJwtAccessToken = function () {
+  return jwt.sign({ id: this._id }, config.JWT_ACCESS_TOKEN_SECRET, {
+    expiresIn: config.JWT_ACCESS_TOKEN_EXPIRY,
+  });
+};
+
+//create and return jwt refresh token
+
+AdminSchema.methods.getJwtRefreshToken = function () {
+  return jwt.sign({ id: this._id }, config.JWT_REFRESH_TOKEN_SECRET, {
+    expiresIn: config.JWT_REFRESH_TOKEN_EXPIRY,
+  });
+};
+
+AdminSchema.methods.getForgotPasswordToken = function () {
+  //generate a long and random string
+  const forgotToken = crypto.randomBytes(20).toString("hex");
+
+  //getting a hash
+  this.forgotPasswordToken = crypto
+    .createHash("sha256")
+    .update(forgotToken)
+    .digest("hex");
+
+  //time of token
+
+  this.forgotPasswordExpiry = new Date(Date.now() + 30 * 60 * 1000);
+
+  return forgotToken;
+};
+const Admin = mongoose.model<AdminDocument>("Admin", AdminSchema);
+
+export default Admin;

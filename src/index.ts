@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import { NotFoundError } from "./errors";
 import { memberAuthRoutes } from "./routes/member/auth.route";
 import { errorHandler } from "./middlewares";
+import { commonAuthRoutes } from "./routes/common/auth.route";
 
 dotenv.config({
   path: ".env",
@@ -29,6 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //member routes
 app.use("/api/member/auth", memberAuthRoutes);
+app.use("/api/common/auth", commonAuthRoutes);
 
 app.all("*", async (_req, _res) => {
   throw new NotFoundError();
