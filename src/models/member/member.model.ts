@@ -12,6 +12,12 @@ export interface IMember {
   password: string;
   role: string;
   refreshToken: string;
+  avatarUrl: {
+    id: string;
+    secure_url: string;
+  };
+  address: string;
+  phoneNumber: string;
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
 }
@@ -22,6 +28,12 @@ export interface MemberDocument extends IMember, mongoose.Document {
   email: string;
   password: string;
   role: string;
+  avatarUrl: {
+    id: string;
+    secure_url: string;
+  };
+  address: string;
+  phoneNumber: string;
   createdAt: Date;
   updatedAt: Date;
   refreshToken: string;
@@ -60,6 +72,16 @@ const MemberSchema = new mongoose.Schema({
     type: String,
     default: "member",
   },
+  avatarUrl: {
+    id: {
+      type: String,
+    },
+    secure_url: {
+      type: String,
+    },
+  },
+  address: String,
+  phoneNumber: String,
   refreshToken: String,
   forgotPasswordToken: String,
   forgotPasswordExpiry: Date,
