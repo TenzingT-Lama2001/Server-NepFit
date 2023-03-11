@@ -1,12 +1,13 @@
 import { Document, Types } from "mongoose";
-import { BadRequestError } from "../../errors";
+import { Cookies } from "../../controllers/common/auth.controller";
+import { BadRequestError, NoContentError } from "../../errors";
 import Admin, { AdminDocument } from "../../models/admin/admin.model";
 import Member, { MemberDocument } from "../../models/member/member.model";
 import Staff, { StaffDocument } from "../../models/staff/staff.model";
 import Trainer, { TrainerDocument } from "../../models/trainer/trainer.model";
 import { generateToken } from "../../utils/generateToken";
 import { LoginMember, RegisterUser } from "../member/auth.service";
-
+import cloudinary from "cloudinary";
 // export async function login({ email, password }: LoginMember) {
 //   const member = await Member.findOne({
 //     email,
@@ -49,6 +50,8 @@ export async function login({ email, password }: LoginMember) {
     case !!(userFound = await Trainer.findOne({ email }).select("+password")):
       break;
     case !!(userFound = await Admin.findOne({ email }).select("+password")):
+      break;
+    case !!(userFound = await Staff.findOne({ email }).select("+password")):
       break;
     default:
       throw new BadRequestError("INVALID_CREDENTIALS");
@@ -114,4 +117,15 @@ export async function register({
     default:
       throw new BadRequestError("USER_ALREADY_EXIST");
   }
+}
+
+type UploadProfile = {
+  role?: string;
+  avatarUrl: string;
+};
+export async function uploadProfile({ role, avatarUrl }: UploadProfile) {
+  const response = await cloudinary.v2.uploader.upload(avatarUrl, {
+    folder: "nepfit-profile",
+  });
+  console.log(response);
 }
