@@ -16,4 +16,7 @@ export default {
   SMTP_PASS: process.env.SMTP_PASS || "",
   USER_EMAIL: process.env.USER_EMAIL || "",
   USER_PASSWORD: process.env.USER_PASSWORD || "",
+  CLOUD_NAME: process.env.CLOUD_NAME || "",
+  API_KEY: process.env.API_KEY || "",
+  API_SECRET: process.env.API_SECRET || "",
 };
