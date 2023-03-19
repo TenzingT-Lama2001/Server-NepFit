@@ -11,6 +11,8 @@ import { errorHandler } from "./middlewares";
 import { commonAuthRoutes } from "./routes/common/auth.route";
 import { adminMembersRoutes } from "./routes/admin/members.route";
 import { v2 as cloudinary } from "cloudinary";
+import { productRoutes } from "./routes/product/product.route";
+import { packageRoutes } from "./routes/package/package.route";
 
 dotenv.config({
   path: ".env",
@@ -37,7 +39,15 @@ app.use(express.urlencoded({ extended: true }));
 //member routes
 app.use("/api/member/auth", memberAuthRoutes);
 app.use("/api/common/auth", commonAuthRoutes);
+
+//admin routes
 app.use("/api/admin/members", adminMembersRoutes);
+
+//product routes
+app.use("/api/products", productRoutes);
+
+//package routes
+app.use("/api/packages", packageRoutes);
 app.all("*", async (_req, _res) => {
   throw new NotFoundError();
 });
