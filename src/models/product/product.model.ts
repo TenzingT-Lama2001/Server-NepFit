@@ -10,6 +10,8 @@ export interface IProduct {
   };
   category: string;
   unit: string;
+  stripeProductId: string;
+  stripeProductPriceId: string;
 }
 
 export interface ProductDocument extends IProduct, mongoose.Document {
@@ -23,6 +25,8 @@ export interface ProductDocument extends IProduct, mongoose.Document {
   };
   category: string;
   unit: string;
+  stripeProductId: string;
+  stripeProductPriceId: string;
 }
 
 const ProductSchema = new mongoose.Schema({
@@ -61,6 +65,14 @@ const ProductSchema = new mongoose.Schema({
   },
   unit: {
     type: String,
+  },
+  stripeProductID: {
+    type: String,
+    required: [true, "Please provide the Stripe Product ID"],
+  },
+  stripeProductPriceID: {
+    type: String,
+    required: [true, "Please provide the Stripe Price ID"],
   },
 });
 

@@ -1,7 +1,23 @@
 import { NextFunction, Request, Response } from "express";
 import { lang } from "../../lang";
+import config from "../../config/default";
+import Stripe from "stripe";
 import { packageServices } from "../../services/package";
-
+const stripe = new Stripe(config.STRIPE_SECRET_KEY, {
+  apiVersion: "2022-11-15",
+});
+type PlanData = {
+  id: string;
+  amount: number;
+  currency: string;
+  interval: Stripe.PlanCreateParams.Interval;
+  active?: boolean;
+  product: {
+    name: string;
+    description: string;
+  };
+  interval_count?: number;
+};
 export async function addPackage(
   req: Request,
   res: Response,
@@ -10,6 +26,21 @@ export async function addPackage(
   try {
     const { name, price, description, duration, durationUnit } = req.body;
 
+    // const planData: PlanData = {
+    //   id: name,
+    //   amount: price * 100,
+    //   currency: "usd",
+    //   interval: "month",
+    //   product: {
+    //     name,
+    //     description,
+    //   },
+    // };
+    // if (duration > 1) {
+    //   planData.interval_count = duration;
+    // }
+
+    // const plan = await stripe.plans.create(planData);
     const packageData = {
       name,
       price,
@@ -17,9 +48,10 @@ export async function addPackage(
       duration,
       durationUnit,
     };
-    await packageServices.addPackage({ packageData });
+    const data = await packageServices.addPackage({ packageData });
     res.status(200).json({
       message: lang.en.CREATED_SUCCESSFULLY,
+      data,
     });
   } catch (error) {
     next(error);
@@ -39,6 +71,7 @@ export async function getPackages(
       sortBy: sortBy as string,
       order: order as string,
     });
+
     res.status(200).json({
       message: lang.en.FETCHED_SUCCESSFULLY,
       data,
@@ -54,6 +87,7 @@ export async function getOnePackage(
 ) {
   try {
     const data = await packageServices.getOnePackage(req.params.packageId);
+    console.log(req.params.packageId);
     res.status(200).json({
       message: lang.en.FETCHED_SUCCESSFULLY,
       data,
@@ -69,7 +103,21 @@ export async function updatePackage(
 ) {
   try {
     const { name, price, description, duration, durationId } = req.body;
+    // const planData: PlanData = {
+    //   id: name,
+    //   amount: price * 100,
+    //   currency: "usd",
+    //   interval: "month",
+    //   product: {
+    //     name: name,
+    //     description: description,
+    //   },
+    // };
+    // if (duration > 1) {
+    //   planData.interval_count = duration;
+    // }
 
+    // const plan = await stripe.plans.create(planData);
     const packageData = {
       name,
       price,

@@ -5,6 +5,8 @@ export interface IPackage {
   price: number;
   duration: number;
   durationUnit: string;
+  stripePackageId: string;
+  stripePackagePriceId: string;
 }
 
 export interface PackageDocument extends IPackage, mongoose.Document {
@@ -13,6 +15,8 @@ export interface PackageDocument extends IPackage, mongoose.Document {
   price: number;
   duration: number;
   durationUnit: string;
+  stripePackageId: string;
+  stripePackagePriceId: string;
 }
 
 const PackageSchema = new mongoose.Schema({
@@ -36,8 +40,19 @@ const PackageSchema = new mongoose.Schema({
   },
   durationUnit: {
     type: String,
-    enum: ["months", "years"],
+    enum: ["months", "years", "month", "year"],
     required: [true, "Please provide the duration unit"],
+  },
+  stripePlanId: {
+    type: String,
+  },
+  stripePackageId: {
+    type: String,
+    // required: [true, "Please provide the Stripe Package ID"],
+  },
+  stripePackagePriceId: {
+    type: String,
+    // required: [true, "Please provide the Stripe Price ID"],
   },
 });
 
