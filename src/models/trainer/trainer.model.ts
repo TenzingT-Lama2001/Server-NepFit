@@ -8,9 +8,15 @@ import config from "../../config/default";
 export interface ITrainer {
   firstName: string;
   lastName: string;
+  specialty: string;
   email: string;
   password: string;
   role: string;
+  availability: {
+    day: string;
+    startTime: string;
+    endTime: string;
+  }[];
   refreshToken: string;
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
@@ -19,11 +25,17 @@ export interface ITrainer {
 export interface TrainerDocument extends ITrainer, mongoose.Document {
   firstName: string;
   lastName: string;
+  specialty: string;
   email: string;
   password: string;
   role: string;
   createdAt: Date;
   updatedAt: Date;
+  availability: {
+    day: string;
+    startTime: string;
+    endTime: string;
+  }[];
   refreshToken: string;
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
@@ -60,6 +72,25 @@ const TrainerSchema = new mongoose.Schema({
     type: String,
     default: "trainer",
   },
+  specialty: {
+    type: String,
+  },
+  availability: [
+    {
+      day: {
+        type: String,
+        required: true,
+      },
+      startTime: {
+        type: String,
+        required: true,
+      },
+      endTime: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
   refreshToken: String,
   forgotPasswordToken: String,
   forgotPasswordExpiry: Date,
