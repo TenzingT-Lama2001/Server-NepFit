@@ -1,8 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { lang } from "../../lang";
 import { adminMembersServices } from "../../services/admin";
+import config from "../../config/default";
+import Stripe from "stripe";
 import { GetMembers } from "../../services/admin/members.service";
-
+const stripe = new Stripe(config.STRIPE_SECRET_KEY, {
+  apiVersion: "2022-11-15",
+});
 export async function getMembers(
   req: Request,
   res: Response,
@@ -86,6 +90,9 @@ export async function createMember(
     const { firstName, lastName, email, password, address, phoneNumber, role } =
       req.body;
     const { image } = req.body;
+    const customer = await stripe.customers.create({
+      email,
+    });
     const memberData = {
       firstName,
       lastName,
@@ -94,12 +101,19 @@ export async function createMember(
       address,
       phoneNumber,
       role,
+      stripeCustomerId: customer.id,
     };
     await adminMembersServices.createMember({ memberData, image });
 
-    res.status(200).json({
-      message: lang.en.CREATED_SUCCESSFULLY,
-    });
+    res
+      .status(200)
+      .cookie("stripe_customer", customer.id, {
+        maxAge: 900000,
+        httpOnly: true,
+      })
+      .json({
+        message: lang.en.CREATED_SUCCESSFULLY,
+      });
   } catch (error) {
     next(error);
   }

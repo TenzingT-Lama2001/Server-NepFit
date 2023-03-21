@@ -19,4 +19,6 @@ export default {
   CLOUD_NAME: process.env.CLOUD_NAME || "",
   API_KEY: process.env.API_KEY || "",
   API_SECRET: process.env.API_SECRET || "",
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || "",
+  STRIPE_PUBLIC_KEY: process.env.STRIPE_PUBLIC_KEY || "",
 };

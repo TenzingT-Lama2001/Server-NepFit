@@ -125,8 +125,9 @@ export async function refreshToken(
         }
 
         const accessToken = member.getJwtAccessToken();
+        const { email, _id, firstName } = member;
         console.log("new access token", accessToken);
-        res.json({ accessToken, role });
+        res.json({ accessToken, role, email, _id, firstName });
       }
     );
   } catch (err) {

@@ -10,6 +10,12 @@ import Trainer, { TrainerDocument } from "../../models/trainer/trainer.model";
 import { commonAuthService } from "../../services/common";
 import config from "../../config/default";
 import jwt from "jsonwebtoken";
+import { User } from "../../utils/generateToken";
+
+function isMemberDocument(user: User): user is MemberDocument {
+  return user.role === "member";
+}
+
 export async function register(
   req: Request,
   res: Response,
@@ -33,9 +39,19 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     );
     console.log("accessToken", accessToken);
     console.log("refresh_token_controller", refreshToken);
+
+    if (isMemberDocument(user)) {
+      const stripeCustomerId = user.stripeCustomerId;
+      res.cookie("stripe_customer", stripeCustomerId, {
+        maxAge: 900000,
+        httpOnly: true,
+      });
+      // use stripeCustomerId as needed
+    }
     res
       .status(200)
       .cookie("refreshToken", refreshToken, authConfig.cookieOptions)
+
       .json({ accessToken, refreshToken, user });
   } catch (error) {
     next(error);
@@ -138,9 +154,18 @@ export async function refreshToken(
         }
 
         const accessToken = userFound.getJwtAccessToken();
+        const { email, _id, firstName } = userFound;
         console.log("new access token", accessToken);
 
-        res.json({ accessToken, role });
+        if (isMemberDocument(userFound)) {
+          const stripeCustomerId = userFound.stripeCustomerId;
+          res.cookie("stripe_customer", stripeCustomerId, {
+            maxAge: 86400000,
+            httpOnly: true,
+          });
+          // use stripeCustomerId as needed
+        }
+        res.json({ accessToken, role, email, _id, firstName });
       }
     );
   } catch (err) {

@@ -13,6 +13,9 @@ import { adminMembersRoutes } from "./routes/admin/members.route";
 import { v2 as cloudinary } from "cloudinary";
 import { productRoutes } from "./routes/product/product.route";
 import { packageRoutes } from "./routes/package/package.route";
+import { programRoutes } from "./routes/program/program.route";
+import { adminTrainerRoutes } from "./routes/trainer/trainer.route";
+import { stripeRoutes } from "./routes/stripe/stripe.route";
 
 dotenv.config({
   path: ".env",
@@ -33,8 +36,8 @@ cloudinary.config({
 });
 app.use(cors(corsOptions));
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 //member routes
 app.use("/api/member/auth", memberAuthRoutes);
@@ -48,6 +51,15 @@ app.use("/api/products", productRoutes);
 
 //package routes
 app.use("/api/packages", packageRoutes);
+
+//program routes
+app.use("/api/programs", programRoutes);
+
+//trainer routes
+app.use("/api/admin/trainers", adminTrainerRoutes);
+
+//stripe routes
+app.use("/api/stripe", stripeRoutes);
 app.all("*", async (_req, _res) => {
   throw new NotFoundError();
 });

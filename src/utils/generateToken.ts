@@ -10,9 +10,15 @@ type GenerateToken = {
   signOptions: jwt.SignOptions;
 };
 
-type User = MemberDocument | TrainerDocument | AdminDocument | StaffDocument;
+export type User =
+  | MemberDocument
+  | TrainerDocument
+  | AdminDocument
+  | StaffDocument;
 
-export async function generateToken(user: User) {
+export async function generateToken(
+  user: User
+): Promise<[string, string, User]> {
   const accessToken = user.getJwtAccessToken();
   const refreshToken = user.getJwtRefreshToken();
 

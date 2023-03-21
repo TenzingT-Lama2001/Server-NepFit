@@ -20,6 +20,7 @@ export interface IMember {
   phoneNumber: string;
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
+  stripeCustomerId: string;
 }
 
 export interface MemberDocument extends IMember, mongoose.Document {
@@ -39,6 +40,7 @@ export interface MemberDocument extends IMember, mongoose.Document {
   refreshToken: string;
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
+  stripeCustomerId: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
   getJwtAccessToken: () => string;
   getJwtRefreshToken: () => string;
@@ -79,6 +81,9 @@ const MemberSchema = new mongoose.Schema({
     secure_url: {
       type: String,
     },
+  },
+  stripeCustomerId: {
+    type: String,
   },
   address: String,
   phoneNumber: String,
