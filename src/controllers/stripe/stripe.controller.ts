@@ -3,8 +3,9 @@ import config from "../../config/default";
 import Stripe from "stripe";
 import { PaymentIntent } from "@stripe/stripe-js";
 import { ProductDocument } from "../../models/product/product.model";
-import { PackageDocument } from "../../models/package/package.model";
+import Package, { PackageDocument } from "../../models/package/package.model";
 import Member from "../../models/member/member.model";
+import Membership from "../../models/membership/membership.model";
 
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, {
   apiVersion: "2022-11-15",
@@ -231,12 +232,16 @@ export async function getInvoiceList(
   res: Response,
   next: NextFunction
 ) {
-  const customerId = req.cookies["stripe_customer"];
-  const invoices = await stripe.invoices.list({
-    customer: customerId,
-    limit: 10, // optional: limit the number of results to 10
-  });
-  res.send({ invoices });
+  try {
+    const customerId = req.cookies["stripe_customer"];
+    const invoices = await stripe.invoices.list({
+      customer: customerId,
+      limit: 10, // optional: limit the number of results to 10
+    });
+    res.send({ invoices });
+  } catch (err) {
+    next(err);
+  }
 }
 export async function createSubscription(
   req: Request,
@@ -247,7 +252,7 @@ export async function createSubscription(
     // Simulate authenticated user. In practice this will be the
     // Stripe Customer ID related to the authenticated user.
     const customerId = req.cookies["stripe_customer"];
-
+    const programId = req.body.programId;
     const priceId = req.body.priceId;
     // const planId = req.body.planId;
     const subscription = await stripe.subscriptions.create({
@@ -257,6 +262,9 @@ export async function createSubscription(
           price: priceId,
         },
       ],
+      metadata: {
+        programId: programId,
+      },
       cancel_at_period_end: true,
       payment_behavior: "default_incomplete",
       expand: ["latest_invoice.payment_intent"],
@@ -292,4 +300,167 @@ export async function createSubscription(
 //   } catch (error) {
 //     next(error);
 //   }
-// }
+//
+interface StripeInvoice {
+  id: string;
+  object: string;
+  lines: {
+    object: string;
+    data: any[]; // You can replace `any` with the actual type of the `data` property.
+    has_more: boolean;
+    total_count: number;
+    url: string;
+  };
+  // Other properties
+}
+export async function webhooks(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const endpointSecret =
+      "whsec_72685f40ab61e9b62c3abc0afc06d53c7a261ea817bfaaecc4105b2c14b361b2";
+    const sig = req.headers["stripe-signature"];
+
+    const stripeSignature = req.headers["stripe-signature"];
+
+    const stripePayload = req.body;
+
+    let event = stripe.webhooks.constructEvent(
+      stripePayload,
+      stripeSignature,
+      endpointSecret
+    );
+
+    // Check if the 'event' variable is defined before accessing its properties
+    if (!event) {
+      throw new Error("Event is not defined");
+    }
+
+    // Handle the event
+    switch (event.type) {
+      case "customer.subscription.created":
+        const customerSubscriptionCreated = event.data.object;
+        // console.log({ customerSubscriptionCreated });
+        // Then define and call a function to handle the event customer.subscription.created
+        break;
+      case "customer.subscription.deleted":
+        const customerSubscriptionDeleted = event.data.object;
+        // console.log({ customerSubscriptionDeleted });
+        // Then define and call a function to handle the event customer.subscription.created
+        break;
+      case "invoice.payment_failed":
+        const invoicePaymentFailed = event.data.object;
+        // console.log({ invoicePaymentFailed });
+        break;
+      case "invoice.payment_succeeded":
+        const invoicePaymentSucceeded: any = event.data.object;
+        // const startDate = invoicePaymentSucceeded.lines.data.period.start;
+        // const endDate = invoicePaymentSucceeded.lines.data.period.end;
+        // console.log({ startDate, endDate });
+        console.log(
+          "invoicePaymentSucceeded.lines.data[0]",
+          invoicePaymentSucceeded.lines.data[0]
+        );
+        console.log(
+          "invoicePaymentSucceeded.lines.data[0].period)",
+          invoicePaymentSucceeded.lines.data[0].period
+        );
+        console.log(
+          "invoicePaymentSucceeded.lines.data[0].period.start",
+          invoicePaymentSucceeded.lines.data[0].period.start
+        );
+        console.log("invoicesuccededdata", invoicePaymentSucceeded);
+        const startDate = invoicePaymentSucceeded.lines.data[0].period.start;
+        const endDate = invoicePaymentSucceeded.lines.data[0].period.end;
+        const customerEmail = invoicePaymentSucceeded.customer_email;
+        const stripePackagePriceId =
+          invoicePaymentSucceeded.lines.data[0].plan.id;
+
+        const subscriptionId = invoicePaymentSucceeded.subscription;
+        const subscription = await stripe.subscriptions.retrieve(
+          subscriptionId
+        );
+        const programId = subscription.metadata.programId;
+        await createMembership({
+          startDate,
+          endDate,
+          customerEmail,
+          stripePackagePriceId,
+          programId,
+        });
+        break;
+      case "payment_intent.succeeded":
+        const paymentIntentSucceeded = event.data.object;
+        // console.log({ paymentIntentSucceeded });
+        break;
+      case "payment_intent.requires_action":
+        const paymentIntentRequiresAction = event.data.object;
+        // console.log({ paymentIntentRequiresAction });
+        // Then define and call a function to handle the event payment_intent.requires_action
+        break;
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+  } catch (err: any) {
+    console.error(err);
+    res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+}
+
+type CreateMembership = {
+  startDate: number;
+  endDate: number;
+  customerEmail: string;
+  stripePackagePriceId: string;
+  programId: string;
+};
+export async function createMembership({
+  startDate,
+  endDate,
+  customerEmail,
+  stripePackagePriceId,
+  programId,
+}: CreateMembership) {
+  try {
+    console.log("FROM CREATEMEMBERSHIP");
+    console.log({
+      startDate,
+      endDate,
+      customerEmail,
+      stripePackagePriceId,
+      programId,
+    });
+
+    //convert date to HRD human readable date
+    //converting from Unix Timestamp
+    const startDateHRD = new Date(startDate * 1000);
+    const endDateHRD = new Date(endDate * 1000);
+
+    //get memberId from customerId
+    const email = customerEmail;
+    const member = await Member.findOne({ email });
+
+    //get packageId from stripePackagePriceId
+
+    const packages = await Package.findOne({ stripePackagePriceId });
+
+    const membershipData = {
+      member: member._id,
+      program: programId,
+      packages: packages._id,
+      startDate: startDateHRD,
+      endDate: endDateHRD,
+    };
+
+    const newMembership = await Membership.create(membershipData);
+    await newMembership.save();
+
+    member.status = "Active";
+    await member.save();
+    console.log({ newMembership });
+  } catch (error) {
+    console.log(error);
+  }
+}
