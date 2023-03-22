@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import config from "../../config/default";
 
+export type Status = "Active" | "Inactive";
 export interface IMember {
   firstName: string;
   lastName: string;
@@ -21,6 +22,7 @@ export interface IMember {
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
   stripeCustomerId: string;
+  status: Status;
 }
 
 export interface MemberDocument extends IMember, mongoose.Document {
@@ -38,6 +40,7 @@ export interface MemberDocument extends IMember, mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
   refreshToken: string;
+  status: Status;
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
   stripeCustomerId: string;
@@ -85,6 +88,7 @@ const MemberSchema = new mongoose.Schema({
   stripeCustomerId: {
     type: String,
   },
+  status: String,
   address: String,
   phoneNumber: String,
   refreshToken: String,

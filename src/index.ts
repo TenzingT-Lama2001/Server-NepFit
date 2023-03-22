@@ -36,7 +36,15 @@ cloudinary.config({
 });
 app.use(cors(corsOptions));
 app.use(cookieParser());
-app.use(express.json({ limit: "50mb" }));
+// app.use(express.json({ limit: "50mb" }));
+
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/stripe/webhooks") {
+    next(); // Do nothing with the body because I need it in a raw state.
+  } else {
+    express.json({ limit: "50mb" })(req, res, next); // ONLY do express.json() if the received request is NOT a WebHook from Stripe.
+  }
+});
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 //member routes

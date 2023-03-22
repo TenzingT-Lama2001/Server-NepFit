@@ -57,6 +57,7 @@ export async function updateMember(
     const { firstName, lastName, email, password, address, phoneNumber, role } =
       req.body;
     const { image } = req.body;
+
     const memberData = {
       firstName,
       lastName,
@@ -108,7 +109,7 @@ export async function createMember(
     res
       .status(200)
       .cookie("stripe_customer", customer.id, {
-        maxAge: 900000,
+        maxAge: 86400000,
         httpOnly: true,
       })
       .json({
