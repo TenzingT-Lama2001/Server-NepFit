@@ -5,7 +5,6 @@ export interface IMembership {
   packages: string;
   startDate: Date;
   endDate: Date;
-  isActive: Boolean;
 }
 
 export interface MembershipDocument extends IMembership, mongoose.Document {
@@ -14,7 +13,6 @@ export interface MembershipDocument extends IMembership, mongoose.Document {
   packages: string;
   startDate: Date;
   endDate: Date;
-  isActive: Boolean;
 }
 
 const MembershipSchema = new mongoose.Schema({
@@ -40,10 +38,6 @@ const MembershipSchema = new mongoose.Schema({
   endDate: {
     type: Date,
     required: true,
-  },
-  isActive: {
-    type: Boolean,
-    default: true,
   },
 });
 

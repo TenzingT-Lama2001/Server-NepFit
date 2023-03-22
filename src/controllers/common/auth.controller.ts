@@ -11,9 +11,22 @@ import { commonAuthService } from "../../services/common";
 import config from "../../config/default";
 import jwt from "jsonwebtoken";
 import { User } from "../../utils/generateToken";
+import Membership from "../../models/membership/membership.model";
 
 function isMemberDocument(user: User): user is MemberDocument {
   return user.role === "member";
+}
+
+async function checkMembershipStatus(memberId: string) {
+  const currentDate = new Date();
+  const membership = await Membership.findOne({
+    member: memberId,
+    endDate: { $gte: currentDate },
+  });
+  const isActive = Boolean(membership);
+  // Update the user's isActive status in the Member collection
+  await Member.updateOne({ _id: memberId }, { isActive });
+  return isActive;
 }
 
 export async function register(
@@ -37,13 +50,16 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     const [accessToken, refreshToken, user] = await commonAuthService.login(
       req.body
     );
+    const memberId = user._id;
     console.log("accessToken", accessToken);
     console.log("refresh_token_controller", refreshToken);
 
     if (isMemberDocument(user)) {
       const stripeCustomerId = user.stripeCustomerId;
+      const response = await checkMembershipStatus(memberId);
+      console.log({ response });
       res.cookie("stripe_customer", stripeCustomerId, {
-        maxAge: 900000,
+        maxAge: 86400000,
         httpOnly: true,
       });
       // use stripeCustomerId as needed
