@@ -60,7 +60,7 @@ export async function updateTrainer(
       phoneNumber,
       role,
       specialty,
-      availability,
+      classTime,
     } = req.body;
     const { image } = req.body;
     const trainerData = {
@@ -72,7 +72,7 @@ export async function updateTrainer(
       phoneNumber,
       role,
       specialty,
-      availability,
+      classTime,
     };
     await adminTrainerServices.updateTrainer({
       trainerData,
@@ -104,7 +104,7 @@ export async function createTrainer(
       phoneNumber,
       role,
       specialty,
-      availability,
+      classTime,
     } = req.body;
     const { image } = req.body;
     const trainerData = {
@@ -116,7 +116,7 @@ export async function createTrainer(
       phoneNumber,
       role,
       specialty,
-      availability,
+      classTime,
     };
     await adminTrainerServices.createTrainer({ trainerData, image });
 

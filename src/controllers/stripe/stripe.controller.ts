@@ -383,12 +383,14 @@ export async function webhooks(
           subscriptionId
         );
         const programId = subscription.metadata.programId;
+        const trainerId = subscription.metadata.trainerId;
         await createMembership({
           startDate,
           endDate,
           customerEmail,
           stripePackagePriceId,
           programId,
+          trainerId,
         });
         break;
       case "payment_intent.succeeded":
@@ -415,6 +417,7 @@ type CreateMembership = {
   customerEmail: string;
   stripePackagePriceId: string;
   programId: string;
+  trainerId: string;
 };
 export async function createMembership({
   startDate,
@@ -422,6 +425,7 @@ export async function createMembership({
   customerEmail,
   stripePackagePriceId,
   programId,
+  trainerId,
 }: CreateMembership) {
   try {
     console.log("FROM CREATEMEMBERSHIP");
@@ -431,6 +435,7 @@ export async function createMembership({
       customerEmail,
       stripePackagePriceId,
       programId,
+      trainerId,
     });
 
     //convert date to HRD human readable date
@@ -452,6 +457,7 @@ export async function createMembership({
       packages: packages._id,
       startDate: startDateHRD,
       endDate: endDateHRD,
+      trainer: trainerId,
     };
 
     const newMembership = await Membership.create(membershipData);

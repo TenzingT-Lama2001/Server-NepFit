@@ -12,11 +12,12 @@ export interface ITrainer {
   email: string;
   password: string;
   role: string;
-  availability: {
-    day: string;
-    startTime: string;
-    endTime: string;
-  }[];
+  phoneNumber: string;
+  avatarUrl: {
+    id: string;
+    secure_url: string;
+  };
+  classTime: string;
   refreshToken: string;
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
@@ -31,11 +32,12 @@ export interface TrainerDocument extends ITrainer, mongoose.Document {
   role: string;
   createdAt: Date;
   updatedAt: Date;
-  availability: {
-    day: string;
-    startTime: string;
-    endTime: string;
-  }[];
+  phoneNumber: string;
+  avatarUrl: {
+    id: string;
+    secure_url: string;
+  };
+  classTime: string;
   refreshToken: string;
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
@@ -68,6 +70,10 @@ const TrainerSchema = new mongoose.Schema({
     validate: [validator.isEmail, "Please enter email in correct format"],
     unique: true,
   },
+  phoneNumber: {
+    type: String,
+    required: [true, "Please provide a phone number"],
+  },
   role: {
     type: String,
     default: "trainer",
@@ -75,22 +81,18 @@ const TrainerSchema = new mongoose.Schema({
   specialty: {
     type: String,
   },
-  availability: [
-    {
-      day: {
-        type: String,
-        required: true,
-      },
-      startTime: {
-        type: String,
-        required: true,
-      },
-      endTime: {
-        type: String,
-        required: true,
-      },
+  avatarUrl: {
+    id: {
+      type: String,
     },
-  ],
+    secure_url: {
+      type: String,
+    },
+  },
+  classTime: {
+    type: String,
+    enum: ["morning", "evening"],
+  },
   refreshToken: String,
   forgotPasswordToken: String,
   forgotPasswordExpiry: Date,
