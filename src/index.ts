@@ -16,6 +16,8 @@ import { packageRoutes } from "./routes/package/package.route";
 import { programRoutes } from "./routes/program/program.route";
 import { adminTrainerRoutes } from "./routes/trainer/trainer.route";
 import { stripeRoutes } from "./routes/stripe/stripe.route";
+import { workoutRoutes } from "./routes/workout/workout.route";
+import { adminStaffRoutes } from "./routes/staff/staff.route";
 
 dotenv.config({
   path: ".env",
@@ -49,6 +51,8 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 //member routes
 app.use("/api/member/auth", memberAuthRoutes);
+
+//common routes
 app.use("/api/common/auth", commonAuthRoutes);
 
 //admin routes
@@ -68,6 +72,14 @@ app.use("/api/admin/trainers", adminTrainerRoutes);
 
 //stripe routes
 app.use("/api/stripe", stripeRoutes);
+
+//workout routes
+app.use("/api/trainer/workouts", workoutRoutes);
+
+//staff routes
+app.use("/api/admin/staffs", adminStaffRoutes);
+
+//unknown routes
 app.all("*", async (_req, _res) => {
   throw new NotFoundError();
 });
