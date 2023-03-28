@@ -254,6 +254,7 @@ export async function createSubscription(
     const customerId = req.cookies["stripe_customer"];
     const programId = req.body.programId;
     const priceId = req.body.priceId;
+    const trainerId = req.body.trainerId;
     // const planId = req.body.planId;
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
@@ -264,6 +265,7 @@ export async function createSubscription(
       ],
       metadata: {
         programId: programId,
+        trainerId: trainerId,
       },
       cancel_at_period_end: true,
       payment_behavior: "default_incomplete",
@@ -384,7 +386,9 @@ export async function webhooks(
         );
         const programId = subscription.metadata.programId;
         const trainerId = subscription.metadata.trainerId;
-        await createMembership({
+        console.log("metadata", subscription.metadata);
+        console.log({ programId, trainerId });
+        const membership = await createMembership({
           startDate,
           endDate,
           customerEmail,
@@ -392,6 +396,7 @@ export async function webhooks(
           programId,
           trainerId,
         });
+        res.send({ membership });
         break;
       case "payment_intent.succeeded":
         const paymentIntentSucceeded = event.data.object;

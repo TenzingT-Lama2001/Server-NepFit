@@ -26,7 +26,7 @@ async function checkMembershipStatus(memberId: string) {
   const isActive = Boolean(membership);
   // Update the user's isActive status in the Member collection
   await Member.updateOne({ _id: memberId }, { isActive });
-  return isActive;
+  return membership;
 }
 
 export async function register(
@@ -56,23 +56,65 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
     if (isMemberDocument(user)) {
       const stripeCustomerId = user.stripeCustomerId;
-      const response = await checkMembershipStatus(memberId);
-      console.log({ response });
-      res.cookie("stripe_customer", stripeCustomerId, {
-        maxAge: 86400000,
-        httpOnly: true,
-      });
-      // use stripeCustomerId as needed
-    }
-    res
-      .status(200)
-      .cookie("refreshToken", refreshToken, authConfig.cookieOptions)
+      const membership = await checkMembershipStatus(memberId);
 
-      .json({ accessToken, refreshToken, user });
+      console.log({ membership });
+      if (membership) {
+        res
+          .cookie("membershipId", membership._id.toString(), {
+            maxAge: 86400000,
+            httpOnly: false,
+          })
+          .cookie("refreshToken", refreshToken, authConfig.cookieOptions)
+          .status(200)
+          .json({ accessToken, refreshToken, user, membership });
+      } else {
+        res
+          .cookie("stripe_customer", stripeCustomerId, {
+            maxAge: 86400000,
+            httpOnly: true,
+          })
+          .cookie("refreshToken", refreshToken, authConfig.cookieOptions)
+          .status(200)
+          .json({ accessToken, refreshToken, user });
+      }
+    } else {
+      res
+        .cookie("refreshToken", refreshToken, authConfig.cookieOptions)
+        .json({ accessToken, refreshToken, user });
+    }
   } catch (error) {
     next(error);
   }
 }
+
+// if (isMemberDocument(userFound)) {
+//   (async () => {
+//     const stripeCustomerId = userFound.stripeCustomerId;
+//     const membership = await checkMembershipStatus(userFound._id);
+//     if (membership) {
+//       res
+//         .cookie("membershipId", membership._id.toString(), {
+//           maxAge: 86400000,
+//           httpOnly: false,
+//         })
+//         .cookie("stripe_customer", stripeCustomerId, {
+//           maxAge: 86400000,
+//           httpOnly: true,
+//         })
+//         .json({ accessToken, role, email, _id, firstName, membership });
+//     } else {
+//       res
+//         .cookie("stripe_customer", stripeCustomerId, {
+//           maxAge: 86400000,
+//           httpOnly: true,
+//         })
+//         .json({ accessToken, role, email, _id, firstName });
+//     }
+//   })();
+// } else {
+//   res.json({ accessToken, role, email, _id, firstName });
+// }
 
 let userFound:
   | (MemberDocument & {
@@ -114,13 +156,20 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
     console.log("userFound", userFound);
     if (!userFound) {
       res.clearCookie("refreshToken", authConfig.cookieOptions);
+      res.clearCookie("membershipId", {
+        maxAge: 86400000,
+        httpOnly: false,
+      });
     }
 
     //DELETE REFRESH TOKEN IN DB
     userFound.refreshToken = "";
     await userFound.save();
     res.clearCookie("refreshToken", authConfig.cookieOptions);
-
+    res.clearCookie("membershipId", {
+      maxAge: 86400000,
+      httpOnly: false,
+    });
     res.status(200).json({
       message: lang.en.LOGOUT_SUCCESSFUL,
     });
@@ -129,6 +178,72 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+// export async function refreshToken(
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   try {
+//     const cookies = req.cookies;
+//     if (!cookies?.refreshToken) {
+//       throw new BadRequestError("UNAUTHORIZED_ACCESS");
+//     }
+//     const refreshToken = cookies.refreshToken;
+
+//     switch (true) {
+//       case !!(userFound = await Member.findOne({ refreshToken }).exec()):
+//         break;
+//       case !!(userFound = await Trainer.findOne({ refreshToken }).exec()):
+//         break;
+//       case !!(userFound = await Admin.findOne({ refreshToken }).exec()):
+//         break;
+//       case !!(userFound = await Staff.findOne({ refreshToken }).exec()):
+//         break;
+//       default:
+//         throw new BadRequestError("NO_REFRESH_TOKEN");
+//     }
+//     console.log("user found from refresh", userFound);
+//     const role = userFound?.role;
+
+//     if (!userFound) throw new ForbiddenError("FORBIDDEN_ERROR");
+
+//     jwt.verify(
+//       refreshToken,
+//       config.JWT_REFRESH_TOKEN_SECRET,
+//       (err: Error, decoded: any) => {
+//         console.log("decoded id", decoded);
+//         if (err || userFound._id.toString() !== decoded.id) {
+//           console.log("in error forbidden");
+//           // res.clearCookie("refreshToken", authConfig.cookieOptions);
+//           throw new ForbiddenError("FORBIDDEN_ERROR");
+//         }
+
+//         const accessToken = userFound.getJwtAccessToken();
+//         const { email, _id, firstName } = userFound;
+//         console.log("new access token", accessToken);
+
+//         if (isMemberDocument(userFound)) {
+//           const stripeCustomerId = userFound.stripeCustomerId;
+//           const membership = await checkMembershipStatus(userFound._id);
+//           res.cookie("stripe_customer", stripeCustomerId, {
+//             maxAge: 86400000,
+//             httpOnly: true,
+//           });
+//           if (membership) {
+//             res.cookie("membershipId", membership._id.toString(), {
+//               maxAge: 86400000,
+//               httpOnly: false,
+//             });
+//           }
+//           // use stripeCustomerId as needed
+//         }
+//         res.json({ accessToken, role, email, _id, firstName });
+//       }
+//     );
+//   } catch (err) {
+//     next(err);
+//   }
+// }
 export async function refreshToken(
   req: Request,
   res: Response,
@@ -140,6 +255,8 @@ export async function refreshToken(
       throw new BadRequestError("UNAUTHORIZED_ACCESS");
     }
     const refreshToken = cookies.refreshToken;
+
+    let userFound: User | null;
 
     switch (true) {
       case !!(userFound = await Member.findOne({ refreshToken }).exec()):
@@ -161,7 +278,7 @@ export async function refreshToken(
     jwt.verify(
       refreshToken,
       config.JWT_REFRESH_TOKEN_SECRET,
-      (err: Error, decoded: any) => {
+      async (err: Error, decoded: any) => {
         console.log("decoded id", decoded);
         if (err || userFound._id.toString() !== decoded.id) {
           console.log("in error forbidden");
@@ -175,13 +292,31 @@ export async function refreshToken(
 
         if (isMemberDocument(userFound)) {
           const stripeCustomerId = userFound.stripeCustomerId;
-          res.cookie("stripe_customer", stripeCustomerId, {
-            maxAge: 86400000,
-            httpOnly: true,
-          });
-          // use stripeCustomerId as needed
+          const membership = await checkMembershipStatus(userFound._id);
+          if (membership) {
+            res
+              .cookie("membershipId", membership._id.toString(), {
+                maxAge: 86400000,
+                httpOnly: false,
+              })
+              .cookie("stripe_customer", stripeCustomerId, {
+                maxAge: 86400000,
+                httpOnly: true,
+              })
+              .json({ accessToken, role, email, _id, firstName, membership });
+          } else {
+            res
+              .cookie("stripe_customer", stripeCustomerId, {
+                maxAge: 86400000,
+                httpOnly: true,
+              })
+              .json({ accessToken, role, email, _id, firstName });
+          }
+        } else {
+          console.log("in else block");
+          console.log({ accessToken, role, email, _id, firstName });
+          res.json({ accessToken, role, email, _id, firstName });
         }
-        res.json({ accessToken, role, email, _id, firstName });
       }
     );
   } catch (err) {
