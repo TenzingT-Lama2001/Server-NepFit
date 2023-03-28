@@ -44,6 +44,24 @@ export async function getOneTrainer(
     next(error);
   }
 }
+export async function getTrainerByProgramId(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const data = await adminTrainerServices.getTrainerByProgramId(
+      req.params.programId
+    );
+
+    res.status(200).json({
+      message: lang.en.FETCHED_SUCCESSFULLY,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 export async function updateTrainer(
   req: Request,
@@ -93,8 +111,6 @@ export async function createTrainer(
   next: NextFunction
 ) {
   try {
-    console.log({ req });
-    console.log("createTrainer req body", req.body);
     const {
       firstName,
       lastName,

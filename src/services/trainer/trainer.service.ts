@@ -1,6 +1,7 @@
 import { SortOrder } from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import Trainer, { TrainerDocument } from "../../models/trainer/trainer.model";
+import Program from "../../models/program/program.model";
 export type GetTrainers = {
   pageNumber: number;
   pageSize: number;
@@ -41,6 +42,14 @@ export async function getTrainers({
 }
 export async function getOneTrainer(id: string) {
   const trainer = await Trainer.findById(id);
+  return trainer;
+}
+export async function getTrainerByProgramId(id: string) {
+  const program = await Program.findById(id);
+  const { name } = program;
+  console.log({ name });
+  const trainer = await Trainer.find({ specialty: name });
+  console.log({ trainer });
   return trainer;
 }
 
