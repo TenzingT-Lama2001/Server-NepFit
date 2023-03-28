@@ -39,6 +39,11 @@ const MembershipSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  trainer: {
+    type: Schema.Types.ObjectId,
+    ref: "Trainer",
+    required: true,
+  },
 });
 
 const Membership = mongoose.model<MembershipDocument>(
