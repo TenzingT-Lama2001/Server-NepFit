@@ -34,5 +34,7 @@ export const errorMsgs = {
     FAILED_T0_SEND_EMAIL: "Failed to send email",
     PASSWORD_MISMATCH: "Password and confirm password do not match",
     FORBIDDEN_ERROR: "Forbidden Error",
+    ATTENDANCE_ERROR: "Error saving attendance",
+    ATTENDANCE_ALREADY_SAVED: "Attendance already saved",
   },
 };
