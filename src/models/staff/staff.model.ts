@@ -12,6 +12,10 @@ export interface IStaff {
   password: string;
   role: string;
   refreshToken: string;
+  avatarUrl: {
+    id: string;
+    secure_url: string;
+  };
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
 }
@@ -22,11 +26,16 @@ export interface StaffDocument extends IStaff, mongoose.Document {
   email: string;
   password: string;
   role: string;
+  avatarUrl: {
+    id: string;
+    secure_url: string;
+  };
   createdAt: Date;
   updatedAt: Date;
   refreshToken: string;
   forgotPasswordToken: string;
   forgotPasswordExpiry: Date;
+
   comparePassword(candidatePassword: string): Promise<boolean>;
   getJwtAccessToken: () => string;
   getJwtRefreshToken: () => string;
@@ -59,6 +68,14 @@ const StaffSchema = new mongoose.Schema({
   role: {
     type: String,
     default: "staff",
+  },
+  avatarUrl: {
+    id: {
+      type: String,
+    },
+    secure_url: {
+      type: String,
+    },
   },
   refreshToken: String,
   forgotPasswordToken: String,

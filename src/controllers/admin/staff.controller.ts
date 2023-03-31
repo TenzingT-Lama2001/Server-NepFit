@@ -82,17 +82,8 @@ export async function createStaff(
   try {
     console.log({ req });
     console.log("createStaff req body", req.body);
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      address,
-      phoneNumber,
-      role,
-      specialty,
-      classTime,
-    } = req.body;
+    const { firstName, lastName, email, password, address, phoneNumber, role } =
+      req.body;
     const { image } = req.body;
     const staffData = {
       firstName,
