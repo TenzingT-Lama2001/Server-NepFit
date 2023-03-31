@@ -19,6 +19,7 @@ import { stripeRoutes } from "./routes/stripe/stripe.route";
 import { workoutRoutes } from "./routes/workout/workout.route";
 import { adminStaffRoutes } from "./routes/staff/staff.route";
 import { membershipRoutes } from "./routes/membership/membership.route";
+import { attendanceRoutes } from "./routes/attendance/attendance.route";
 
 dotenv.config({
   path: ".env",
@@ -82,6 +83,9 @@ app.use("/api/admin/staffs", adminStaffRoutes);
 
 //membership routes
 app.use("/api/membership", membershipRoutes);
+
+//attendance routes
+app.use("/api/attendance", attendanceRoutes);
 //unknown routes
 app.all("*", async (_req, _res) => {
   throw new NotFoundError();
