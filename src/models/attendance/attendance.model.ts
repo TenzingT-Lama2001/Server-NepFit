@@ -1,5 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { BadRequestError } from "../../errors";
+import { format, parseISO } from "date-fns";
+
 export interface IAttendance {
   member: string;
   date: Date;
@@ -20,8 +22,14 @@ const AttendanceSchema = new mongoose.Schema({
   },
 
   date: {
-    type: Date,
+    type: String,
     required: true,
+    set: function (date: Date): string {
+      return format(new Date(date), "yyyy-MM-dd");
+    },
+    get: function (date: string): Date {
+      return parseISO(date);
+    },
   },
 
   is_present: Boolean,

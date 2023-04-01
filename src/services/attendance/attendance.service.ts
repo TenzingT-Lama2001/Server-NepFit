@@ -1,4 +1,4 @@
-import { SortOrder } from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 import Program, { ProgramDocument } from "../../models/program/program.model";
 import { v2 as cloudinary } from "cloudinary";
 import Attendance, {
@@ -15,7 +15,16 @@ export type CreateAttendance = {
 export async function createAttendance({
   attendanceData: { member, date, is_present },
 }: CreateAttendance) {
-  const existingAttendance = await Attendance.findOne({ member, date });
+  const searchDate = new Date(date);
+  searchDate.setHours(0, 0, 0, 0);
+  const existingAttendance = await Attendance.findOne({
+    member: new mongoose.Types.ObjectId(member),
+    date: searchDate,
+  });
+  console.log("type of member", typeof member);
+  console.log("type of date", typeof date);
+  console.log({ member, date });
+  console.log({ existingAttendance });
   if (existingAttendance) throw new BadRequestError("ATTENDANCE_ALREADY_SAVED");
   const attendance = Attendance.create({
     member,
