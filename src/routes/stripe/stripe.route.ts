@@ -10,6 +10,7 @@ router.post("/create-subscription", stripeController.createSubscription);
 // router.get("/invoice-preview", stripeController.createInvoicePreview);
 // router.get("/invoice-list", stripeController.getInvoiceList);
 // router.post("/cancel-subscription", stripeController.cancelSubscription);
+router.get("/create-payment-intent", stripeController.createPaymentIntent);
 router.post(
   "/webhooks",
   express.raw({ type: "application/json" }),

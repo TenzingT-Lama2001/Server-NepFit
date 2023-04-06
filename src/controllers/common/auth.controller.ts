@@ -282,7 +282,7 @@ export async function refreshToken(
         console.log("decoded id", decoded);
         if (err || userFound._id.toString() !== decoded.id) {
           console.log("in error forbidden");
-          // res.clearCookie("refreshToken", authConfig.cookieOptions);
+          res.clearCookie("refreshToken", authConfig.cookieOptions);
           throw new ForbiddenError("FORBIDDEN_ERROR");
         }
 

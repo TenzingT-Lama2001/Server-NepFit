@@ -186,15 +186,24 @@ export async function createPrice(
   unitAmount: number,
   currency: string,
   productId: string,
-  interval_count: number
+  interval_count?: number
 ) {
-  const priceObject = await stripe.prices.create({
-    unit_amount: unitAmount * 100,
-    currency: currency,
-    product: productId,
-    recurring: { interval: "month", interval_count },
-  });
-  return priceObject;
+  if (interval_count) {
+    const priceObject = await stripe.prices.create({
+      unit_amount: unitAmount * 100,
+      currency: currency,
+      product: productId,
+      recurring: { interval: "month", interval_count },
+    });
+    return priceObject;
+  } else {
+    const priceObject = await stripe.prices.create({
+      unit_amount: unitAmount * 100,
+      currency: currency,
+      product: productId,
+    });
+    return priceObject;
+  }
 }
 
 // export async function createCustomer(
@@ -471,6 +480,33 @@ export async function createMembership({
     member.status = "Active";
     await member.save();
     console.log({ newMembership });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function createPaymentIntent(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  console.log("req", req);
+  const { amount } = req.query;
+  console.log(req.query);
+  const amountNumber: number = Number(amount);
+  try {
+    const paymentIntent: Stripe.PaymentIntent =
+      await stripe.paymentIntents.create({
+        amount: amountNumber * 100,
+        currency: "usd",
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+    console.log("client secret", paymentIntent.client_secret);
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
   } catch (error) {
     console.log(error);
   }
