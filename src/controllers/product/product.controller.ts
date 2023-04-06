@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { lang } from "../../lang";
 import { productServices } from "../../services/product";
+import { createPrice, createProduct } from "../stripe/stripe.controller";
 
 export async function addProduct(
   req: Request,
@@ -10,6 +11,7 @@ export async function addProduct(
   try {
     const { name, price, description, quantity, category, unit } = req.body;
     const { image } = req.body;
+
     const productData = {
       name,
       price,

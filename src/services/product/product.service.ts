@@ -1,23 +1,51 @@
 import Product, { ProductDocument } from "../../models/product/product.model";
 import { v2 as cloudinary } from "cloudinary";
 import { SortOrder } from "mongoose";
+import {
+  createPrice,
+  createProduct,
+} from "../../controllers/stripe/stripe.controller";
 type CreateProduct = {
   productData: Partial<ProductDocument>;
   image?: string;
 };
 export async function addProduct({ productData, image }: CreateProduct) {
+  const { name, price, description, quantity, category, unit } = productData;
   if (image) {
     const response = await cloudinary.uploader.upload(image, {
       folder: "product-image",
     });
 
+    const currency = "usd";
+    const metadata = {
+      price,
+      currency,
+    };
+
+    const product = await createProduct(name, description, metadata);
+    console.log(product);
+    const productId = product.id;
+    console.log(productId);
+
+    const priceObject = await createPrice(price, currency, productId);
     const { public_id, secure_url } = response;
     const productImage = {
       id: public_id,
       secure_url,
     };
-
-    const productDataWithImage = { ...productData, imageUrl: productImage };
+    const newData = {
+      name,
+      description,
+      price,
+      quantity,
+      category,
+      unit,
+      stripeProductId: productId,
+      stripeProductPriceId: priceObject.id,
+    };
+    console.log({ newData });
+    const productDataWithImage = { ...newData, imageUrl: productImage };
+    console.log({ productDataWithImage });
     await Product.create(productDataWithImage);
   } else {
     await Product.create(productData);
@@ -78,20 +106,58 @@ export async function updateProduct({
   image,
 }: UpdateProduct) {
   if (image) {
-    const response = await cloudinary.uploader.upload(image, {
-      folder: "product-profile",
-    });
+    const { name, price, description, quantity, category, unit } = productData;
 
-    const { public_id, secure_url } = response;
-    const productImage = {
-      id: public_id,
-      secure_url,
-    };
-    const productDataWithImage = { ...productData, imageUrl: productImage };
-    await Product.findByIdAndUpdate(productId, productDataWithImage, {
-      new: true,
-      runValidators: true,
-    });
+    if (price) {
+      const currency = "usd";
+      const metadata = {
+        price,
+        currency: "usd",
+      };
+      const product = await createProduct(name, description, metadata);
+      const productId = product.id;
+
+      const priceObject = await createPrice(price, currency, productId);
+      const response = await cloudinary.uploader.upload(image, {
+        folder: "product-profile",
+      });
+
+      const newData = {
+        name,
+        description,
+        price,
+        quantity,
+        category,
+        unit,
+        stripeProductId: productId,
+        stripeProductPriceId: priceObject.id,
+      };
+      const { public_id, secure_url } = response;
+      const productImage = {
+        id: public_id,
+        secure_url,
+      };
+      const productDataWithImage = { ...newData, imageUrl: productImage };
+      await Product.findByIdAndUpdate(productId, productDataWithImage, {
+        new: true,
+        runValidators: true,
+      });
+    } else {
+      const response = await cloudinary.uploader.upload(image, {
+        folder: "product-profile",
+      });
+
+      const { public_id, secure_url } = response;
+      const productImage = {
+        id: public_id,
+        secure_url,
+      };
+      const productDataWithImage = { ...productData, imageUrl: productImage };
+      await Product.findByIdAndUpdate(productId, productDataWithImage, {
+        new: true,
+        runValidators: true,
+      });
+    }
   } else {
     await Product.findByIdAndUpdate(productId, productData, {
       new: true,

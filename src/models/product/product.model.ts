@@ -66,13 +66,11 @@ const ProductSchema = new mongoose.Schema({
   unit: {
     type: String,
   },
-  stripeProductID: {
+  stripeProductId: {
     type: String,
-    required: [true, "Please provide the Stripe Product ID"],
   },
-  stripeProductPriceID: {
+  stripeProductPriceId: {
     type: String,
-    required: [true, "Please provide the Stripe Price ID"],
   },
 });
 
