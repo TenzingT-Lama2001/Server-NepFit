@@ -409,12 +409,20 @@ export async function webhooks(
         break;
       case "payment_intent.succeeded":
         const paymentIntentSucceeded = event.data.object;
-        // console.log({ paymentIntentSucceeded });
+        console.log({ paymentIntentSucceeded });
+        break;
+      case "payment_intent.payment_failed":
+        const paymentIntentFailed = event.data.object;
+        console.log({ paymentIntentFailed });
         break;
       case "payment_intent.requires_action":
         const paymentIntentRequiresAction = event.data.object;
         // console.log({ paymentIntentRequiresAction });
         // Then define and call a function to handle the event payment_intent.requires_action
+        break;
+      case "charge.succeeded":
+        const chargeSucceeded = event.data.object;
+        console.log(chargeSucceeded);
         break;
       default:
         console.log(`Unhandled event type ${event.type}`);
@@ -485,25 +493,105 @@ export async function createMembership({
   }
 }
 
+// export async function createPaymentIntent(
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   console.log("req", req);
+//   const { amount, stripeProductIdArray, stripeProductPriceIdArray,stripeProductQty } = req.query;
+//   console.log(req.query);
+//   const customerId = req.cookies["stripe_customer"];
+
+//   const amountNumber: number = Number(amount);
+//   try {
+//     const paymentIntent: Stripe.PaymentIntent =
+//       await stripe.paymentIntents.create({
+//         amount: amountNumber * 100,
+//         currency: "usd",
+//         automatic_payment_methods: {
+//           enabled: true,
+//         },
+//         metadata: {
+//           customerId,
+//         },
+//       });
+//     console.log("client secret", paymentIntent.client_secret);
+//     res.send({
+//       clientSecret: paymentIntent.client_secret,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+// export async function createPaymentIntent(
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   const { stripeProductIdArray, stripeProductQty } = req.query as any;
+//   const customerId = req.cookies["stripe_customer"];
+
+//   try {
+//     const paymentIntents = await Promise.all(
+//       stripeProductIdArray.map((stripeProductId: string, index: number) => {
+//         const { qty, subtotal } = stripeProductQty[index];
+//         return stripe.paymentIntents.create({
+//           amount: Number(subtotal),
+//           currency: "usd",
+//           automatic_payment_methods: {
+//             enabled: true,
+//           },
+//           metadata: {
+//             customerId,
+//             stripeProductId,
+//             qty,
+//             subtotal,
+//           },
+//         });
+//       })
+//     );
+
+//     res.send({
+//       clientSecrets: paymentIntents.map(
+//         (paymentIntent) => paymentIntent.client_secret
+//       ),
+//     });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
 export async function createPaymentIntent(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  console.log("req", req);
-  const { amount } = req.query;
-  console.log(req.query);
-  const amountNumber: number = Number(amount);
+  const { stripeProductQty, amount } = req.query as any;
+  const customerId = req.cookies["stripe_customer"];
+
   try {
-    const paymentIntent: Stripe.PaymentIntent =
-      await stripe.paymentIntents.create({
-        amount: amountNumber * 100,
-        currency: "usd",
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
-    console.log("client secret", paymentIntent.client_secret);
+    const metadata = {} as any;
+
+    stripeProductQty.forEach((productQty: any, index: number) => {
+      const { stripeProductId, qty, amount } = productQty;
+      metadata[`product_${index}_stripeProductId`] = stripeProductId;
+      metadata[`product_${index}_qty`] = qty;
+      metadata[`product_${index}_amount`] = amount;
+    });
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: "usd",
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        customerId,
+        ...metadata,
+      },
+    });
+    console.log({ paymentIntent });
     res.send({
       clientSecret: paymentIntent.client_secret,
     });
