@@ -35,7 +35,7 @@ export async function register(
   next: NextFunction
 ) {
   try {
-    console.log(req.body);
+    // console.log(req.body);
     await commonAuthService.register(req.body);
     res.status(200).json({
       message: lang.en.REGISTERED_SUCCESSFULLY,
@@ -45,20 +45,20 @@ export async function register(
   }
 }
 export async function login(req: Request, res: Response, next: NextFunction) {
-  console.log("req.body", req.body);
+  // console.log("req.body", req.body);
   try {
     const [accessToken, refreshToken, user] = await commonAuthService.login(
       req.body
     );
     const memberId = user._id;
-    console.log("accessToken", accessToken);
-    console.log("refresh_token_controller", refreshToken);
+    // console.log("accessToken", accessToken);
+    // console.log("refresh_token_controller", refreshToken);
 
     if (isMemberDocument(user)) {
       const stripeCustomerId = user.stripeCustomerId;
       const membership = await checkMembershipStatus(memberId);
 
-      console.log({ membership });
+      // console.log({ membership });
       if (membership) {
         res
           .cookie("membershipId", membership._id.toString(), {
@@ -153,7 +153,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
       default:
         throw new BadRequestError("NO_REFRESH_TOKEN");
     }
-    console.log("userFound", userFound);
+    // console.log("userFound", userFound);
     if (!userFound) {
       res.clearCookie("refreshToken", authConfig.cookieOptions);
       res.clearCookie("membershipId", {
@@ -270,7 +270,7 @@ export async function refreshToken(
       default:
         throw new BadRequestError("NO_REFRESH_TOKEN");
     }
-    console.log("user found from refresh", userFound);
+    // console.log("user found from refresh", userFound);
     const role = userFound?.role;
 
     if (!userFound) throw new ForbiddenError("FORBIDDEN_ERROR");
@@ -279,16 +279,16 @@ export async function refreshToken(
       refreshToken,
       config.JWT_REFRESH_TOKEN_SECRET,
       async (err: Error, decoded: any) => {
-        console.log("decoded id", decoded);
+        // console.log("decoded id", decoded);
         if (err || userFound._id.toString() !== decoded.id) {
-          console.log("in error forbidden");
+          // console.log("in error forbidden");
           res.clearCookie("refreshToken", authConfig.cookieOptions);
           throw new ForbiddenError("FORBIDDEN_ERROR");
         }
 
         const accessToken = userFound.getJwtAccessToken();
         const { email, _id, firstName } = userFound;
-        console.log("new access token", accessToken);
+        // console.log("new access token", accessToken);
 
         if (isMemberDocument(userFound)) {
           const stripeCustomerId = userFound.stripeCustomerId;
@@ -313,8 +313,8 @@ export async function refreshToken(
               .json({ accessToken, role, email, _id, firstName });
           }
         } else {
-          console.log("in else block");
-          console.log({ accessToken, role, email, _id, firstName });
+          // console.log("in else block");
+          // console.log({ accessToken, role, email, _id, firstName });
           res.json({ accessToken, role, email, _id, firstName });
         }
       }

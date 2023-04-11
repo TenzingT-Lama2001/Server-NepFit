@@ -21,6 +21,9 @@ import { adminStaffRoutes } from "./routes/staff/staff.route";
 import { membershipRoutes } from "./routes/membership/membership.route";
 import { attendanceRoutes } from "./routes/attendance/attendance.route";
 import { orderRoutes } from "./routes/order/order.route";
+import { bookingRoutes } from "./routes/booking/booking.route";
+import { reportRoutes } from "./routes/report/report.route";
+import { notificationRoutes } from "./routes/notification/notification.route";
 
 dotenv.config({
   path: ".env",
@@ -88,8 +91,17 @@ app.use("/api/membership", membershipRoutes);
 //attendance routes
 app.use("/api/attendance", attendanceRoutes);
 
-//order rotues
+//order routes
 app.use("/api/order", orderRoutes);
+
+//booking routes
+app.use("/api/booking", bookingRoutes);
+
+//report routes
+app.use("/api/report", reportRoutes);
+
+//notification routes
+app.use("/api/notification", notificationRoutes);
 //unknown routes
 app.all("*", async (_req, _res) => {
   throw new NotFoundError();

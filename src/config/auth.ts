@@ -15,4 +15,9 @@ export const authConfig = {
       return `http://localhost:3000/api/member/auth/reset-password/${forgotToken}`;
     },
   },
+
+  notificationMail: {
+    subject: "Renew package",
+    message: "renew!",
+  },
 };

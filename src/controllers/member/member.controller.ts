@@ -28,8 +28,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     const [accessToken, refreshToken, user] = await memberAuthService.login(
       req.body
     );
-    console.log("accessToken", accessToken);
-    console.log("refresh_token_controller", refreshToken);
+    // console.log("accessToken", accessToken);
+    // console.log("refresh_token_controller", refreshToken);
     res
       .status(200)
       .cookie("refreshToken", refreshToken, authConfig.cookieOptions)
@@ -107,26 +107,26 @@ export async function refreshToken(
 
     if (!member) throw new ForbiddenError("FORBIDDEN_ERROR");
 
-    console.log("member", member);
-    console.log("member id ", member._id);
-    console.log("refresh token ", refreshToken);
-    console.log("config", config.JWT_REFRESH_TOKEN_SECRET);
-    console.log("env", process.env.JWT_REFRESH_TOKEN_SECRET);
+    // console.log("member", member);
+    // console.log("member id ", member._id);
+    // console.log("refresh token ", refreshToken);
+    // console.log("config", config.JWT_REFRESH_TOKEN_SECRET);
+    // console.log("env", process.env.JWT_REFRESH_TOKEN_SECRET);
 
     jwt.verify(
       refreshToken,
       config.JWT_REFRESH_TOKEN_SECRET,
       (err: Error, decoded: any) => {
-        console.log("decoded id", decoded);
+        // console.log("decoded id", decoded);
         if (err || member._id.toString() !== decoded.id) {
-          console.log("in error forbidden");
+          // console.log("in error forbidden");
           // res.clearCookie("refreshToken", authConfig.cookieOptions);
           throw new ForbiddenError("FORBIDDEN_ERROR");
         }
 
         const accessToken = member.getJwtAccessToken();
         const { email, _id, firstName } = member;
-        console.log("new access token", accessToken);
+        // console.log("new access token", accessToken);
         res.json({ accessToken, role, email, _id, firstName });
       }
     );

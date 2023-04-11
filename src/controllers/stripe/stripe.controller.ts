@@ -6,6 +6,8 @@ import { ProductDocument } from "../../models/product/product.model";
 import Package, { PackageDocument } from "../../models/package/package.model";
 import Member from "../../models/member/member.model";
 import Membership from "../../models/membership/membership.model";
+import Order from "../../models/order/order.model";
+import logger from "../../utils/logger";
 
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, {
   apiVersion: "2022-11-15",
@@ -422,7 +424,52 @@ export async function webhooks(
         break;
       case "charge.succeeded":
         const chargeSucceeded = event.data.object;
-        console.log(chargeSucceeded);
+        const {
+          amount,
+          billing_details: { address },
+          metadata,
+        } = chargeSucceeded as Stripe.Charge;
+        type Product = {
+          qty: string;
+          stripeProductId: string;
+          name: string;
+          amount: string;
+          [key: string]: any;
+        };
+
+        const products: Product[] = [];
+
+        Object.keys(metadata).forEach((key: string) => {
+          if (key.startsWith("product_")) {
+            const parts = key.split("_");
+            const index = parseInt(parts[1], 10);
+            const field = parts[2];
+            const value = metadata[key];
+            if (!products[index]) {
+              products[index] = {
+                qty: "",
+                stripeProductId: "",
+                name: "",
+                amount: "",
+              };
+            }
+            products[index][field] = value;
+          }
+        });
+        const { memberId } = metadata;
+
+        console.log({ address });
+        console.log({ products });
+        logger.info(products);
+        const { city } = address;
+        const orderData = {
+          memberId,
+          shippingAddress: city,
+          products,
+          amount,
+        };
+        const order = await Order.create(orderData);
+        console.log({ order });
         break;
       default:
         console.log(`Unhandled event type ${event.type}`);
@@ -567,17 +614,18 @@ export async function createPaymentIntent(
   res: Response,
   next: NextFunction
 ) {
-  const { stripeProductQty, amount } = req.query as any;
+  const { stripeProductQty, amount, memberId } = req.query as any;
   const customerId = req.cookies["stripe_customer"];
 
   try {
     const metadata = {} as any;
 
     stripeProductQty.forEach((productQty: any, index: number) => {
-      const { stripeProductId, qty, amount } = productQty;
+      const { stripeProductId, qty, subtotal, name } = productQty;
       metadata[`product_${index}_stripeProductId`] = stripeProductId;
       metadata[`product_${index}_qty`] = qty;
-      metadata[`product_${index}_amount`] = amount;
+      metadata[`product_${index}_amount`] = subtotal;
+      metadata[`product_${index}_name`] = name;
     });
 
     const paymentIntent = await stripe.paymentIntents.create({
@@ -587,11 +635,11 @@ export async function createPaymentIntent(
         enabled: true,
       },
       metadata: {
-        customerId,
         ...metadata,
+        memberId,
       },
     });
-    console.log({ paymentIntent });
+    // console.log({ paymentIntent });
     res.send({
       clientSecret: paymentIntent.client_secret,
     });
@@ -599,3 +647,32 @@ export async function createPaymentIntent(
     console.log(error);
   }
 }
+
+/*
+
+const metadata = {
+  product_0_qty: '2',
+  product_0_stripeProductId: 'prod_NfAqhYG9nH8HS1',
+  product_1_qty: '3',
+  product_1_stripeProductId: 'prod_JKAqhYG9nHFHJS1',
+};
+
+const products = [];
+
+Object.keys(metadata).forEach(key => {
+  if (key.startsWith('product_')) {
+    const parts = key.split('_');
+    const index = parts[1];
+    const field = parts[2];
+    const value = metadata[key];
+    if (!products[index]) {
+      products[index] = {};
+    }
+    products[index][field] = value;
+  }
+});
+
+console.log(products); // Output: [ { qty: '2', stripeProductId: 'prod_NfAqhYG9nH8HS1' }, { qty: '3', stripeProductId: 'prod_JKAqhYG9nHFHJS1' } ]
+s
+
+*/
