@@ -65,9 +65,13 @@ export async function updateOrder(
   try {
     const { ...orderData } = req.body;
 
-    await orderServices.updateOrder({
+    const updatedOrder = await orderServices.updateOrder({
       orderData,
       orderId: req.params.orderId,
+    });
+    res.status(200).json({
+      message: lang.en.UPDATED_SUCCESSFULLY,
+      updatedOrder,
     });
   } catch (error) {
     next(error);
@@ -84,6 +88,41 @@ export async function deleteOrder(
     res.status(200).json({
       message: lang.en.DELETED_SUCCESSFULLY,
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getOrderByStripeProductId(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const data = await orderServices.getOrderByStripeProductId(
+      req.params.stripeProductId
+    );
+    res.status(200).json({
+      message: lang.en.FETCHED_SUCCESSFULLY,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getPurchasingHistory(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const data = await orderServices.getPurchasingHistory(req.params.memberId);
+    res.status(200).json({
+      message: lang.en.FETCHED_SUCCESSFULLY,
+      data,
+    });
+    console.log({ data });
   } catch (error) {
     next(error);
   }
