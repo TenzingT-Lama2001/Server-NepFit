@@ -1,10 +1,12 @@
 import mongoose, { Schema } from "mongoose";
+import { StringLiteral } from "typescript";
 export interface IMembership {
   member: string;
   program: string;
   packages: string;
   startDate: Date;
   endDate: Date;
+  trainer: string;
 }
 
 export interface MembershipDocument extends IMembership, mongoose.Document {
@@ -13,6 +15,7 @@ export interface MembershipDocument extends IMembership, mongoose.Document {
   packages: string;
   startDate: Date;
   endDate: Date;
+  trainer: string;
 }
 
 const MembershipSchema = new mongoose.Schema({

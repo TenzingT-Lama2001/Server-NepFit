@@ -2,6 +2,10 @@ import { SortOrder } from "mongoose";
 import Membership, {
   MembershipDocument,
 } from "../../models/membership/membership.model";
+import Program from "../../models/program/program.model";
+import Member from "../../models/member/member.model";
+import Package from "../../models/package/package.model";
+import Trainer from "../../models/trainer/trainer.model";
 
 export interface CreateMembership {
   member: string;
@@ -45,9 +49,7 @@ export async function getMemberships({
 }: GetMemberships) {
   const regex = new RegExp(searchQuery, "i");
   const pageNumberPositive = Math.max(pageNumber + 1, 1);
-  const query = Membership.find({
-    $or: [{ name: regex }, { description: regex }],
-  })
+  const query = Membership.find({})
     .skip((pageNumberPositive - 1) * pageSize)
     .limit(pageSize);
 
@@ -57,12 +59,31 @@ export async function getMemberships({
     query.sort(sort);
   }
   const memberships = await query;
-  const totalMemberships = await Membership.countDocuments({
-    $or: [{ name: regex }, { description: regex }],
-  });
+
+  const membershipData = await Promise.all(
+    memberships.map(async (membership) => {
+      const program = await Program.findById(membership.program);
+      const member = await Member.findById(membership.member);
+      const packages = await Package.findById(membership.packages);
+      const trainer = await Trainer.findById(membership.trainer);
+      const startDate = membership.startDate;
+      const endDate = membership.endDate;
+      return {
+        program,
+        member,
+        packages,
+        trainer,
+        startDate,
+        endDate,
+      };
+    })
+  );
+  const totalMemberships = await Membership.countDocuments({});
+
   return {
     memberships,
     totalMemberships,
+    membershipData,
   };
 }
 export async function getOneMembership(id: string) {
