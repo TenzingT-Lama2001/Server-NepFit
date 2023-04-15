@@ -1,4 +1,7 @@
-import { templateForgotPassword } from "../constants/email-template";
+import {
+  templateForgotPassword,
+  templateRenewPackage,
+} from "../constants/email-template";
 import config from "./default";
 export const authConfig = {
   cookieOptions: {
@@ -12,12 +15,12 @@ export const authConfig = {
     subject: "Password Reset",
     html: templateForgotPassword,
     generateUrl(forgotToken: string) {
-      return `http://localhost:3000/api/member/auth/reset-password/${forgotToken}`;
+      return `http://localhost:3000/api/member/auth/new-password/${forgotToken}`;
     },
   },
 
   notificationMail: {
     subject: "Renew package",
-    message: "renew!",
+    html: templateRenewPackage,
   },
 };
