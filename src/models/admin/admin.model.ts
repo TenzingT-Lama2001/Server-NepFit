@@ -20,7 +20,12 @@ export interface AdminDocument extends IAdmin, mongoose.Document {
   firstName: string;
   lastName: string;
   email: string;
+  address: string;
   password: string;
+  avatarUrl: {
+    id: string;
+    secure_url: string;
+  };
   role: string;
   createdAt: Date;
   updatedAt: Date;

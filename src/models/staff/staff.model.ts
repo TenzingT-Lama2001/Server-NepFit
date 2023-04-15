@@ -26,6 +26,7 @@ export interface StaffDocument extends IStaff, mongoose.Document {
   email: string;
   password: string;
   role: string;
+  address: string;
   avatarUrl: {
     id: string;
     secure_url: string;

@@ -8,13 +8,13 @@ export async function sendNotification(email: string) {
   console.log("member", member);
   if (!member) throw new BadRequestError("MEMBER_DOESNT_EXIST");
 
-  const { subject, message } = authConfig.notificationMail;
+  const { subject, html } = authConfig.notificationMail;
 
   try {
     await mailHelper({
       email: [email],
       subject,
-      html: message,
+      html,
     });
   } catch (error) {
     throw new BadRequestError("FAILED_T0_SEND_EMAIL");

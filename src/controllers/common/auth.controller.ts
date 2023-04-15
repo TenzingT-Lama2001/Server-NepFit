@@ -287,7 +287,7 @@ export async function refreshToken(
         }
 
         const accessToken = userFound.getJwtAccessToken();
-        const { email, _id, firstName } = userFound;
+        const { email, _id, firstName, address, avatarUrl } = userFound;
         // console.log("new access token", accessToken);
 
         if (isMemberDocument(userFound)) {
@@ -303,19 +303,44 @@ export async function refreshToken(
                 maxAge: 86400000,
                 httpOnly: true,
               })
-              .json({ accessToken, role, email, _id, firstName, membership });
+              .json({
+                accessToken,
+                role,
+                email,
+                _id,
+                firstName,
+                membership,
+                address,
+                avatarUrl,
+              });
           } else {
             res
               .cookie("stripe_customer", stripeCustomerId, {
                 maxAge: 86400000,
                 httpOnly: true,
               })
-              .json({ accessToken, role, email, _id, firstName });
+              .json({
+                accessToken,
+                role,
+                email,
+                _id,
+                firstName,
+                address,
+                avatarUrl,
+              });
           }
         } else {
           // console.log("in else block");
           // console.log({ accessToken, role, email, _id, firstName });
-          res.json({ accessToken, role, email, _id, firstName });
+          res.json({
+            accessToken,
+            role,
+            email,
+            _id,
+            firstName,
+            address,
+            avatarUrl,
+          });
         }
       }
     );

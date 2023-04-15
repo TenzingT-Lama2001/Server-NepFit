@@ -32,6 +32,7 @@ export interface TrainerDocument extends ITrainer, mongoose.Document {
   role: string;
   createdAt: Date;
   updatedAt: Date;
+  address: string;
   phoneNumber: string;
   avatarUrl: {
     id: string;

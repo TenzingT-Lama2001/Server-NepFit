@@ -60,6 +60,7 @@ export async function login({ email, password }: LoginMember) {
 }
 
 export async function forgotPassword(email: string) {
+  console.log({ email });
   const member = await Member.findOne({ email });
   console.log("member", member);
   if (!member) throw new BadRequestError("MEMBER_DOESNT_EXIST");
