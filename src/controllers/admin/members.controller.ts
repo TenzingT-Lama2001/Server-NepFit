@@ -135,3 +135,21 @@ export async function deleteMember(
     next(error);
   }
 }
+export async function getMembersByTrainer(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const data = await adminMembersServices.getMembersByTrainer(
+      req.params.trainerId
+    );
+
+    res.status(200).json({
+      message: lang.en.FETCHED_SUCCESSFULLY,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

@@ -1,6 +1,7 @@
 import { SortOrder } from "mongoose";
 import Member, { MemberDocument } from "../../models/member/member.model";
 import { v2 as cloudinary } from "cloudinary";
+import Membership from "../../models/membership/membership.model";
 export type GetMembers = {
   pageNumber: number;
   pageSize: number;
@@ -107,4 +108,23 @@ export async function createMember({ memberData, image }: CreateMember) {
   } else {
     await Member.create(memberData);
   }
+}
+
+export async function getMembersByTrainer(id: string) {
+  const memberships = await Membership.find({ trainer: id });
+  const membersId: string[] = [];
+  memberships.map((membership: any) => {
+    membersId.push(membership.member);
+  });
+
+  const membersPromises = membersId.map(async (memberId) => {
+    return await Member.findById(memberId);
+  });
+  const members = await Promise.all(membersPromises);
+  const totalMembers = members.length;
+  console.log({ members });
+  return {
+    members,
+    totalMembers,
+  };
 }

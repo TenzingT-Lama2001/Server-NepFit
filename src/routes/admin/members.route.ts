@@ -13,4 +13,5 @@ router.patch("/:memberId", adminMembersController.updateMember);
 
 router.post("/", adminMembersController.createMember);
 
+router.get("/:trainerId/members", adminMembersController.getMembersByTrainer);
 export { router as adminMembersRoutes };
