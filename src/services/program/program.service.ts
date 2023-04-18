@@ -55,7 +55,7 @@ export async function updateProgram({
       id: public_id,
       secure_url,
     };
-    const programDataWithProfile = { ...programData, avatarUrl: programImage };
+    const programDataWithProfile = { ...programData, image: programImage };
     await Program.findByIdAndUpdate(programId, programDataWithProfile, {
       new: true,
       runValidators: true,

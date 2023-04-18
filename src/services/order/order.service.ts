@@ -119,7 +119,7 @@ export async function getPurchasingHistory(memberId: string) {
   console.log({ memberId });
   const purchasingHistory = await Order.find({
     memberId,
-    deliveryStatus: "delivered",
+    // deliveryStatus: "delivered",
   });
   console.log({ purchasingHistory });
 

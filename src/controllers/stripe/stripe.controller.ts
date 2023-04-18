@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import config from "../../config/default";
 import Stripe from "stripe";
 import { PaymentIntent } from "@stripe/stripe-js";
-import { ProductDocument } from "../../models/product/product.model";
+import Product, { ProductDocument } from "../../models/product/product.model";
 import Package, { PackageDocument } from "../../models/package/package.model";
 import Member from "../../models/member/member.model";
 import Membership from "../../models/membership/membership.model";
@@ -355,23 +355,18 @@ export async function webhooks(
     switch (event.type) {
       case "customer.subscription.created":
         const customerSubscriptionCreated = event.data.object;
-        // console.log({ customerSubscriptionCreated });
-        // Then define and call a function to handle the event customer.subscription.created
+
         break;
       case "customer.subscription.deleted":
         const customerSubscriptionDeleted = event.data.object;
-        // console.log({ customerSubscriptionDeleted });
-        // Then define and call a function to handle the event customer.subscription.created
+
         break;
       case "invoice.payment_failed":
         const invoicePaymentFailed = event.data.object;
-        // console.log({ invoicePaymentFailed });
+
         break;
       case "invoice.payment_succeeded":
         const invoicePaymentSucceeded: any = event.data.object;
-        // const startDate = invoicePaymentSucceeded.lines.data.period.start;
-        // const endDate = invoicePaymentSucceeded.lines.data.period.end;
-        // console.log({ startDate, endDate });
         console.log(
           "invoicePaymentSucceeded.lines.data[0]",
           invoicePaymentSucceeded.lines.data[0]
@@ -458,9 +453,6 @@ export async function webhooks(
         });
         const { memberId } = metadata;
 
-        console.log({ address });
-        console.log({ products });
-        logger.info(products);
         const { city } = address;
         const orderData = {
           memberId,
@@ -469,6 +461,17 @@ export async function webhooks(
           amount,
         };
         const order = await Order.create(orderData);
+
+        for (const product of products) {
+          const { stripeProductId, qty } = product;
+          const existingProduct = await Product.findOne({ stripeProductId });
+          if (existingProduct) {
+            existingProduct.quantity -= parseInt(qty, 10);
+            await existingProduct.save();
+            console.log({ existingProduct });
+          }
+        }
+
         console.log({ order });
         break;
       default:
@@ -615,7 +618,9 @@ export async function createPaymentIntent(
   next: NextFunction
 ) {
   const { stripeProductQty, amount, memberId } = req.query as any;
+  console.log("req.query", req.query);
   const customerId = req.cookies["stripe_customer"];
+  const stripeAmount = amount * 100;
 
   try {
     const metadata = {} as any;
@@ -624,22 +629,21 @@ export async function createPaymentIntent(
       const { stripeProductId, qty, subtotal, name } = productQty;
       metadata[`product_${index}_stripeProductId`] = stripeProductId;
       metadata[`product_${index}_qty`] = qty;
-      metadata[`product_${index}_amount`] = subtotal;
+      metadata[`product_${index}_amount`] = subtotal * 100;
       metadata[`product_${index}_name`] = name;
     });
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: stripeAmount,
       currency: "usd",
-      automatic_payment_methods: {
-        enabled: true,
-      },
+
+      payment_method_types: ["card"],
       metadata: {
         ...metadata,
         memberId,
       },
     });
-    // console.log({ paymentIntent });
+    console.log({ paymentIntent });
     res.send({
       clientSecret: paymentIntent.client_secret,
     });
