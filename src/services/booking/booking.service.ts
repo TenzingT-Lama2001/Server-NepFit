@@ -51,6 +51,8 @@ export async function getBookings({
   }
   const bookings = await query;
   const totalBookings = await Booking.countDocuments({});
+
+  bookings.map((booking) => {});
   return {
     bookings,
     totalBookings,

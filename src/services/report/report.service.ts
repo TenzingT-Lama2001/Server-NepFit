@@ -28,9 +28,7 @@ export async function createReport(reportData: any) {
     month: "long",
     day: "numeric",
   });
-
   // Add title
-
   doc.fontSize(16).text(formattedDate, { align: "left" });
   doc.fontSize(16).text(reportData.member, { align: "right" });
   doc.moveDown(1.5);

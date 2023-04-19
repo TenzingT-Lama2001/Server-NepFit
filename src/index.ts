@@ -57,49 +57,34 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 //member routes
 app.use("/api/member/auth", memberAuthRoutes);
-
 //common routes
 app.use("/api/common/auth", commonAuthRoutes);
-
 //admin routes
 app.use("/api/admin/members", adminMembersRoutes);
-
 //product routes
 app.use("/api/products", productRoutes);
-
 //package routes
 app.use("/api/packages", packageRoutes);
-
 //program routes
 app.use("/api/programs", programRoutes);
-
 //trainer routes
 app.use("/api/admin/trainers", adminTrainerRoutes);
-
 //stripe routes
 app.use("/api/stripe", stripeRoutes);
-
 //workout routes
 app.use("/api/trainer/workouts", workoutRoutes);
-
 //staff routes
 app.use("/api/admin/staffs", adminStaffRoutes);
-
 //membership routes
 app.use("/api/membership", membershipRoutes);
-
 //attendance routes
 app.use("/api/attendance", attendanceRoutes);
-
 //order routes
 app.use("/api/order", orderRoutes);
-
 //booking routes
 app.use("/api/booking", bookingRoutes);
-
 //report routes
 app.use("/api/report", reportRoutes);
-
 //notification routes
 app.use("/api/notification", notificationRoutes);
 //unknown routes

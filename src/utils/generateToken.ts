@@ -21,10 +21,8 @@ export async function generateToken(
 ): Promise<[string, string, User]> {
   const accessToken = user.getJwtAccessToken();
   const refreshToken = user.getJwtRefreshToken();
-
   user.refreshToken = refreshToken;
   await user.save();
-
   user.password = undefined;
   user.refreshToken = undefined;
   return [accessToken, refreshToken, user];
